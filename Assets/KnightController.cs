@@ -29,21 +29,41 @@ public class KnightController : MonoBehaviour
     }
     void Update()
     {
+        // call GetInput
+        GetInput();
+    }
+
+    void Movement()
+    {
         // if our character is in the ground
         if (charController.isGrounded)
         {
-            // On pressing W, player walks in z axis
+            // On pressing  W, player walks in z axis
             if (Input.GetKey(KeyCode.W))
             {
-                // run animation when v press W.
-                anim.SetInteger("condition", 1);
-                moveDir = new Vector3(0, 0, 1);
-                moveDir *= speed;
-                // move the character in diff directions too.
-                moveDir = transform.TransformDirection(moveDir);
+
+                // check player is attacking / not
+                if (anim.GetBool("attacking") == true)
+                {
+                    return;
+                } else if (anim.GetBool("attacking") == false)
+                {
+                    // if no attacking,
+                    // start running
+                    anim.SetBool("running", true);
+                    // run animation when v press W.
+                    anim.SetInteger("condition", 1);
+                    moveDir = new Vector3(0, 0, 1);
+                    moveDir *= speed;
+                    // move the character in diff directions too.
+                    moveDir = transform.TransformDirection(moveDir);
+                }
+               
             }
             if (Input.GetKeyUp(KeyCode.W))
             {
+                // stop the runnning
+                anim.SetBool("running", false);
                 // halt animation when stop pressing W.
                 anim.SetInteger("condition", 0);
                 // once v stop pressing W, stop mocing character
@@ -60,6 +80,48 @@ public class KnightController : MonoBehaviour
         moveDir.y -= gravity * Time.deltaTime;
         charController.Move(moveDir * Time.deltaTime);
         // key a - rotate left, d - rotate right
+
+    }
+
+    void GetInput()
+    {
+        // if the controller is grounded, 
+        if (charController.isGrounded)
+        {
+            // check v press the left mouse button, 0 means left mouse button
+            if (Input.GetMouseButtonDown(0))
+            {
+                if (anim.GetBool("running") == true)
+                {
+                    // if character running, then set it to false
+                    anim.SetBool("running", false);
+                    // set to idle
+                    anim.SetInteger("condition", 0);
+                }
+                if (anim.GetBool("running") == false)
+                {
+                    // do attacking
+                    Attacking();
+                }
+                // call Attacking function
+                Attacking();
+            }
+        }
+    }
+    void Attacking()
+    {
+        StartCoroutine(AttackRoutine());
+    }
+    IEnumerator AttackRoutine()
+    {
+        // v play the animation
+        anim.SetBool("attacking", true);
+        anim.SetInteger("condition", 2);
+        // wait for 1 second
+        yield return new WaitForSeconds(1);
+        anim.SetInteger("condition", 0);
+        anim.SetBool("attacking", false);
+
     }
 
 }
